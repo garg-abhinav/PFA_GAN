@@ -6,7 +6,6 @@ This is a temporary script file.
 """
 
 
-#
 
 import numpy as np
 import torch.utils.data as tordata
