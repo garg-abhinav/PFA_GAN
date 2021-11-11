@@ -65,30 +65,5 @@ class DataGAN:
         self.actor_age, self.actor_image_url, self.actor_id = self.load_data()
         self.image_array= self.create_image_array(self.actor_image_url)
 
+        #list of ages, list of actor ids, list of 3d image arrays
         return self.actor_age, self.actor_id, self.image_array
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
