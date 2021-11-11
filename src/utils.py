@@ -1,6 +1,20 @@
 import torch.nn.functional as F
 import torch
 import numpy as np
+import os
+import glob
+
+
+def get_latest_checkpoint(net, log_dir, name, device):
+    files = glob.glob(log_dir + '/*.pth')
+    checkpoints = []
+    for i in files:
+        checkpoints.append(int(i.split('/')[-1].split('_')[-1].split('.')[0]))
+    latest_cp = max(checkpoints)
+    file = os.path.join(log_dir, f'{name}_step_{latest_cp}.pth')
+    net.load_state_dict(torch.load(file, map_location=device))
+    print(f'Model loaded from {file}')
+    return net, latest_cp
 
 
 def age2group(age, age_group):
