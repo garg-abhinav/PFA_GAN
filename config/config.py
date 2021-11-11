@@ -3,6 +3,7 @@
 log_root = 'models/'
 age_group = 4
 vgg_face_model = 'vgg_face.pt'
+image_size=256
 
 # AgeEstimationNetwork hyper parameters
 age_lr = 0.0001

@@ -5,6 +5,7 @@ import mat73
 from itertools import islice
 import pprint
 import matplotlib.image as mpimg
+import pickle
 import numpy as np
 
 class DataGAN:
@@ -67,3 +68,28 @@ class DataGAN:
 
         #list of ages, list of actor ids, list of 3d image arrays
         return self.actor_age, self.actor_id, self.image_array
+
+x=DataGAN()
+actor_age, actor_id, image_array = x.data_preprocess()
+
+
+with open('GAN_Image_Dump.pkl','wb') as f:
+    pickle.dump(image_array, f)
+
+
+with open('GAN_Age_Dump.pkl','wb') as f:
+    pickle.dump(actor_age, f)
+
+
+
+# with open('GAN_Image_Dump.pkl','rb') as f:
+#     x = pickle.load(f)
+    # print(x[0].shape)
+    # print(len(x))
+
+# with open('GAN_Age_Dump.pkl','wb') as f:
+#     pickle.dump(actor_age, f)
+#
+# with open('GAN_Age_Dump.pkl','rb') as f:
+#     x = pickle.load(f)
+#     print(x.shape)
