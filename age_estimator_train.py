@@ -1,6 +1,7 @@
 import logging
 import os
 import numpy as np
+import pickle
 import torch
 from torch import optim
 from tqdm import tqdm
@@ -9,6 +10,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 from src import utils
 from src.models import AgeEstimationNetwork
+from src.data import AgeDataset
 import config.config as exp_config
 
 
@@ -31,15 +33,17 @@ def train_net(net, device, global_step=0):
     # labels_val = data['masks_test']
     #
     # print(np.unique(labels_train), np.unique(labels_val))
-    #
-    # train_data = acdc_data.BasicDataset(images_train, labels_train)
-    #
-    # n_train = len(images_train)
-    #
+
+    image_urls = pickle.load(open(os.path.join(exp_config.data_root, exp_config.image_urls), 'rb'))
+    image_ages = pickle.load(open(os.path.join(exp_config.data_root, exp_config.image_ages), 'rb'))
+
+    train_data = AgeDataset(image_urls, image_ages)
+    n_train = len(image_urls)
+
+    logging.info(f'Data loaded having {n_train} images')
+
     train_loader = DataLoader(train_data, batch_size=exp_config.age_batch_size,
                               shuffle=True, num_workers=8, pin_memory=True)
-
-    # change everything above
 
     writer = SummaryWriter(comment='AgeEstimator_LR_{}_BS_{}'.format(exp_config.age_lr, exp_config.age_batch_size))
 

@@ -5,6 +5,7 @@ age_group = 4
 vgg_face_model = 'vgg_face.pt'
 image_size = 256
 data_root = 'data/'
+cacd_data = 'CACD2000/'
 image_urls = 'image_urls.pkl'
 image_ages = 'image_ages.pkl'
 
@@ -13,7 +14,7 @@ age_lr = 0.0001
 age_lr_decay_rate = 0.7
 age_lr_decay_steps = 15
 age_batch_size = 128
-age_max_epochs = 50
+age_max_epochs = 2
 age_dir = 'age_estimation_network/'
 
 # PFAGAN hyper parameters

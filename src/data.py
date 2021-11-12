@@ -1,14 +1,15 @@
 import torchvision
+from torch.utils.data import Dataset
 import config.config as opt
 import pickle
 import os
 import matplotlib.image as mpimg
 
 
-class AgeDataset:
+class AgeDataset(Dataset):
 
     def __init__(self, dataset, age):
-        self.dataset = dataset
+        self.image_urls = dataset
         self.age = age
 
         self.transforms = torchvision.transforms.Compose([
@@ -19,11 +20,11 @@ class AgeDataset:
 
     def read_image(self, image):
         # Reading the image from the directory
-        img = mpimg.imread(os.path.join(os.path.join(f'../{opt.data_root}', 'CACD2000/'), image))
+        img = mpimg.imread(os.path.join(os.path.join(f'../{opt.data_root}', opt.cacd_data), image))
         return img
 
     def __getitem__(self, idx):
-        url = self.dataset[idx]
+        url = self.image_urls[idx]
         img = self.read_image(url)
         img = self.transforms(img)
 
