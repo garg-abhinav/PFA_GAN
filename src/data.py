@@ -20,7 +20,7 @@ class AgeDataset(Dataset):
 
     def read_image(self, image):
         # Reading the image from the directory
-        img = mpimg.imread(os.path.join(os.path.join(f'../{opt.data_root}', opt.cacd_data), image))
+        img = mpimg.imread(os.path.join(os.path.join(opt.data_root, opt.cacd_data), image))
         return img
 
     def __getitem__(self, idx):

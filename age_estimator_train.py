@@ -64,8 +64,8 @@ def train_net(net, device, global_step=0):
 
         with tqdm(total=n_train, desc=f'Epoch {epoch + 1}/{max_epochs}', unit='img') as pbar:
             for batch in train_loader:
-                gt_age = batch['label']
-                imgs = batch['image']
+                gt_age = batch[1]
+                imgs = batch[0]
 
                 imgs = imgs.to(device=device, dtype=torch.float32)
                 gt_age = gt_age.to(device=device, dtype=torch.long)
