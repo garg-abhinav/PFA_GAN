@@ -34,8 +34,8 @@ def train_net(net, device, global_step=0):
     #
     # print(np.unique(labels_train), np.unique(labels_val))
 
-    image_urls = pickle.load(open(os.path.join(exp_config.data_root, exp_config.image_urls), 'rb'))
-    image_ages = pickle.load(open(os.path.join(exp_config.data_root, exp_config.image_ages), 'rb'))
+    image_urls = pickle.load(open(os.path.join(exp_config.data_root, exp_config.image_urls), 'rb'))[:200]
+    image_ages = pickle.load(open(os.path.join(exp_config.data_root, exp_config.image_ages), 'rb'))[:200]
 
     train_data = AgeDataset(image_urls, image_ages)
     n_train = len(image_urls)
@@ -98,7 +98,7 @@ def train_net(net, device, global_step=0):
             logging.info('Created checkpoint directory')
 
         torch.save(net.state_dict(), os.path.join(log_dir, f'age_estimator_step_{global_step}.pth'))
-        logging.info(f'Checkpoint {global_step} saved !')
+        # logging.info(f'Checkpoint {global_step} saved !')
 
     writer.close()
 

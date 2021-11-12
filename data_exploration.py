@@ -1,7 +1,4 @@
 import scipy.io
-import h5py
-import pandas as pd
-import mat73
 from itertools import islice
 import pprint
 import matplotlib.image as mpimg
@@ -20,7 +17,7 @@ class DataGAN:
 
     def load_data(self):
 
-        data_dict = scipy.io.loadmat('celebrity2000_meta.mat')
+        data_dict = scipy.io.loadmat('data/celebrity2000_meta.mat')
         celebrity_data = data_dict['celebrityImageData']
 
         actor_age = []
@@ -75,10 +72,10 @@ actor_age, actor_id, image_array = x.data_preprocess()
 
 print(len(image_array))
 
-with open('image_urls.pkl', 'wb') as f:
+with open('data/image_urls.pkl', 'wb') as f:
     pickle.dump(image_array, f)
 
-with open('image_ages.pkl', 'wb') as f:
+with open('data/image_ages.pkl', 'wb') as f:
     pickle.dump(actor_age, f)
 
 # with open('GAN_Image_Dump.pkl','rb') as f:
