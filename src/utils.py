@@ -54,5 +54,6 @@ def age_criterion(age_logit, group_logit, gt_age, age_group):
     preds = F.softmax(age_logit, dim=1)
     pred_age = torch.sum(preds * torch.arange(preds.size(1)).to(preds.device), dim=1)
     reg_loss = F.mse_loss(pred_age, gt_age)
-    class_loss = F.cross_entropy(group_logit, age2group(gt_age, age_group).long())
+    class_loss = F.cross_entropy(group_logit, torch.tensor(age2group(gt_age, age_group),
+                                                           dtype=torch.float32).to(gt_age.device))
     return reg_loss + class_loss

@@ -68,7 +68,7 @@ def train_net(net, device, global_step=0):
                 imgs = batch[0]
 
                 imgs = imgs.to(device=device, dtype=torch.float32)
-                gt_age = gt_age.to(device=device, dtype=torch.long)
+                gt_age = gt_age.to(device=device, dtype=torch.float32)
 
                 age_logit, group_logit = net(imgs)
                 loss = criterion(age_logit, group_logit, gt_age, exp_config.age_group)
