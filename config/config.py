@@ -3,7 +3,10 @@
 log_root = 'models/'
 age_group = 4
 vgg_face_model = 'vgg_face.pt'
-image_size=256
+image_size = 256
+data_root = 'data/'
+image_urls = 'image_urls.pkl'
+image_ages = 'image_ages.pkl'
 
 # AgeEstimationNetwork hyper parameters
 age_lr = 0.0001

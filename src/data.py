@@ -1,6 +1,7 @@
 import torchvision
 import config.config as opt
 import pickle
+import os
 import matplotlib.image as mpimg
 
 
@@ -18,8 +19,8 @@ class AgeDataset:
 
     def read_image(self, image):
         # Reading the image from the directory
-        img1 = mpimg.imread('../CACD2000/' + image)
-        return img1
+        img = mpimg.imread(os.path.join(os.path.join(f'../{opt.data_root}', 'CACD2000/'), image))
+        return img
 
     def __getitem__(self, idx):
         url = self.dataset[idx]
