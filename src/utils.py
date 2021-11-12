@@ -10,6 +10,8 @@ def get_latest_checkpoint(net, log_dir, name, device):
     checkpoints = []
     for i in files:
         checkpoints.append(int(i.split('/')[-1].split('_')[-1].split('.')[0]))
+    if len(checkpoints) == 0:
+        return net, 0
     latest_cp = max(checkpoints)
     file = os.path.join(log_dir, f'{name}_step_{latest_cp}.pth')
     net.load_state_dict(torch.load(file, map_location=device))

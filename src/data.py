@@ -4,7 +4,7 @@ import pickle
 import matplotlib.image as mpimg
 
 
-class AgeDataset():
+class AgeDataset:
 
     def __init__(self, dataset, age):
         self.dataset = dataset
@@ -17,16 +17,13 @@ class AgeDataset():
             torchvision.transforms.Normalize([0.5], [0.5])])
 
     def read_image(self, image):
-
-        #Reading the image from the directory
-        img1 = mpimg.imread('../CACD2000/'+image)
+        # Reading the image from the directory
+        img1 = mpimg.imread('../CACD2000/' + image)
         return img1
 
     def __getitem__(self, idx):
-
         url = self.dataset[idx]
-
-        img=self.read_image(url)
+        img = self.read_image(url)
         img = self.transforms(img)
 
         return img, self.age[idx]
@@ -42,4 +39,3 @@ class AgeDataset():
 #
 # test_case=AgeDataset(x, y)
 # print(test_case[0][0].shape)
-
