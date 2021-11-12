@@ -58,20 +58,24 @@ class DataGAN:
 
             image_array.append(self.read_image(url))
 
+            if i==10:
+                break
+
         return image_array
 
 
     def data_preprocess(self):
 
         self.actor_age, self.actor_image_url, self.actor_id = self.load_data()
-        self.image_array= self.create_image_array(self.actor_image_url)
+        #self.image_array= self.create_image_array(self.actor_image_url)
 
         #list of ages, list of actor ids, list of 3d image arrays
-        return self.actor_age, self.actor_id, self.image_array
+        return self.actor_age, self.actor_id, self.actor_image_url
 
 x=DataGAN()
 actor_age, actor_id, image_array = x.data_preprocess()
 
+print(len(image_array))
 
 with open('GAN_Image_Dump.pkl','wb') as f:
     pickle.dump(image_array, f)
@@ -81,15 +85,12 @@ with open('GAN_Age_Dump.pkl','wb') as f:
     pickle.dump(actor_age, f)
 
 
-
 # with open('GAN_Image_Dump.pkl','rb') as f:
 #     x = pickle.load(f)
     # print(x[0].shape)
     # print(len(x))
 
-# with open('GAN_Age_Dump.pkl','wb') as f:
-#     pickle.dump(actor_age, f)
-#
+
 # with open('GAN_Age_Dump.pkl','rb') as f:
 #     x = pickle.load(f)
 #     print(x.shape)
