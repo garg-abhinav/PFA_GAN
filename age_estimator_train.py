@@ -16,26 +16,8 @@ import config.config as exp_config
 
 def train_net(net, device, global_step=0):
 
-    # data = acdc_data.load_and_maybe_process_data(
-    #     input_folder=exp_config.data_root,
-    #     preprocessing_folder=exp_config.preproc_folder,
-    #     mode=exp_config.data_mode,
-    #     size=exp_config.image_size,
-    #     target_resolution=exp_config.target_resolution,
-    #     force_overwrite=False,
-    #     split_test_train=True
-    # )
-    #
-    # # the following are HDF5 datasets, not numpy arrays
-    # images_train = data['images_train']
-    # labels_train = data['masks_train']
-    # images_val = data['images_test']
-    # labels_val = data['masks_test']
-    #
-    # print(np.unique(labels_train), np.unique(labels_val))
-
-    image_urls = pickle.load(open(os.path.join(exp_config.data_root, exp_config.image_urls), 'rb'))[:200]
-    image_ages = pickle.load(open(os.path.join(exp_config.data_root, exp_config.image_ages), 'rb'))[:200]
+    image_urls = pickle.load(open(os.path.join(exp_config.data_root, exp_config.image_urls), 'rb'))#[:200]
+    image_ages = pickle.load(open(os.path.join(exp_config.data_root, exp_config.image_ages), 'rb'))#[:200]
 
     train_data = AgeDataset(image_urls, image_ages)
     n_train = len(image_urls)
