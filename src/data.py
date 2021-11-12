@@ -30,6 +30,9 @@ class AgeDataset(Dataset):
 
         return img, self.age[idx]
 
+    def __len__(self):
+        return len(self.image_urls)
+
 # with open('../GAN_Image_Dump.pkl','rb') as f:
 #     x = pickle.load(f)
 #     print(x[0])

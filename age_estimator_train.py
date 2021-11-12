@@ -111,7 +111,7 @@ if __name__ == '__main__':
     logging.info(f'Using device {device}')
 
     net = AgeEstimationNetwork(age_group=exp_config.age_group)
-    logging.info(f'Network: {net.age_group} age groups (classes)')
+    logging.info(f'Age Estimation Network with {exp_config.age_group} age groups (classes)')
 
     global_step = 0
     if os.path.exists(log_dir):
