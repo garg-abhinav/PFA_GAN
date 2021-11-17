@@ -9,6 +9,7 @@ from tqdm import tqdm
 import math
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
+import torch.nn.functional as F
 from src import utils
 from src.models import AgeEstimationNetwork, Generator, Discriminator
 import config.config as exp_config
@@ -71,5 +72,124 @@ class PFA_GAN:
         self.age_classifier = age_classifier.to(device=self.device)
         self.d_optim = d_optim
         self.g_optim = g_optim
+        self.age_classifier.eval()
+        self.vgg_face.eval()
 
-        self.trainable_modules = [self.generator, self.discriminator, self.d_optim, self.g_optim]
+        self.trainable_modules = {'generator': self.generator,
+                                  'discriminator': self.discriminator,
+                                  'd_optim': self.d_optim,
+                                  'g_optim': self.g_optim}
+
+    def fit(self):
+        train_data = AgeDataset(image_urls, image_ages)
+        n_train = len(image_urls)
+
+        logging.info(f'Data loaded having {n_train} images')
+
+        train_loader = DataLoader(train_data, batch_size=exp_config.batch_size,
+                                  shuffle=True, num_workers=8, pin_memory=True)
+
+        writer = SummaryWriter(comment='GAN_LR_{}_BS_{}'.format(exp_config.lr, exp_config.batch_size))
+
+        max_epochs = exp_config.max_epochs - self.global_step // math.ceil(n_train / exp_config.batch_size)
+
+        logging.info(f'''Starting training from step {self.global_step}:
+                    Epochs:          {max_epochs}
+                    Batch size:      {exp_config.batch_size}
+                    Learning rate:   {exp_config.lr}
+                    Training size:   {n_train}
+                    Device:          {self.device.type}
+                ''')
+
+        if not os.path.exists(self.log_dir):
+            os.mkdir(self.log_dir)
+            logging.info('Created checkpoint directory')
+
+        for epoch in range(max_epochs):
+            with tqdm(total=n_train, desc=f'Epoch {epoch + 1}/{max_epochs}', unit='img') as pbar:
+                for batch in train_loader:
+                    self.generator.train()
+                    self.discriminator.train()
+
+                    # Train Discriminator
+                    d_loss, g_source = self.train_discriminator(batch)
+
+                    # Train Generator
+                    g_loss, l1_loss, ssim_loss, id_loss, age_loss, total_loss = self.train_generator(batch, g_source)
+
+                    pbar.set_postfix(**{"d_loss": d_loss,
+                                        "g_loss": g_loss,
+                                        "total_loss": total_loss})
+                    pbar.update(batch[0].shape[0])  # assuming batch[0] is images
+
+                    writer.add_scalar('d_loss/train', d_loss, self.global_step)
+                    writer.add_scalar('g_loss/train', g_loss, self.global_step)
+                    writer.add_scalar('l1_loss/train', l1_loss, self.global_step)
+                    writer.add_scalar('ssim_loss/train', ssim_loss, self.global_step)
+                    writer.add_scalar('id_loss/train', id_loss, self.global_step)
+                    writer.add_scalar('age_loss/train', age_loss, self.global_step)
+                    writer.add_scalar('total_loss/train', total_loss, self.global_step)
+                    self.global_step += 1
+
+                writer.add_scalar('learning_rate', self.g_optim.param_groups[0]['lr'], self.global_step)
+
+            if ((epoch + 1) % exp_config.checkpoint == 0) or (epoch + 1 == max_epochs):
+                for name, module in self.trainable_modules.items():
+                    utils.save_checkoint(module, self.log_dir, name, self.global_step)
+        writer.close()
+
+    def train_discriminator(self, batch):
+        source_img, true_img, source_label, target_label, true_label, true_age, mean_age = batch
+        g_source = self.generator(source_img, source_label, target_label)
+
+        d1_logit = self.discriminator(true_img, true_label)
+        d3_logit = self.discriminator(g_source.detach(), target_label)
+
+        # Discriminator loss
+        d_loss = (F.mse_loss(d1_logit, torch.ones_like(d1_logit, device=self.device)) +
+                  F.mse_loss(d3_logit, torch.zeros_like(d3_logit, device=self.device))) / 2
+
+        self.d_optim.zero_grad()
+        d_loss.backward()
+        self.d_optim.step()
+        return d_loss, g_source
+
+    def train_generator(self, batch, g_source):
+        source_img, true_img, source_label, target_label, true_label, true_age, mean_age = batch
+        gan_logit = self.discriminator(g_source, target_label)
+
+        # GAN loss
+        g_loss = F.mse_loss(gan_logit, torch.ones_like(gan_logit, device=self.device)) / 2
+
+        # AgeEstimator Loss
+        age_logit, group_logit = self.age_classifier(g_source)
+        age_loss = utils.age_criterion(age_logit, group_logit, mean_age, exp_config.age_group)
+
+        # L1 loss
+        l1_loss = F.l1_loss(g_source, source_img)
+
+        # SSIM loss
+        ssim_loss = utils.ssim_loss(g_source, source_img, 10)
+
+        # ID loss
+        id_loss = F.mse_loss(self.vgg_face_output(g_source), self.vgg_face_output(source_img))
+
+        # pix_loss_weight = max(opt.pix_loss_weight,
+        #                       exp_config.lambda_gan * (opt.decay_pix_factor ** (n_iter // opt.decay_pix_n)))
+
+        total_loss = g_loss * exp_config.lambda_gan + \
+                     (l1_loss * (1 - exp_config.alpha_ssim) + ssim_loss * exp_config.alpha_ssim +
+                      id_loss * exp_config.alpha_id) * exp_config.lambda_id + \
+                     age_loss * exp_config.lambda_age
+
+        self.g_optim.zero_grad()
+        total_loss.backward()
+        self.g_optim.step()
+        return g_loss, l1_loss, ssim_loss, id_loss, age_loss, total_loss
+
+    def vgg_face_output(self, inputs):
+        inputs = (F.hardtanh(inputs) * 0.5 + 0.5) * 255
+        mean = torch.tensor([129.1863, 104.7624, 93.5940], device=self.device)
+        std = torch.tensor([1.0, 1.0, 1.0], device=self.device)
+        inputs = inputs.sub(mean[None, :, None, None]).div(std[None, :, None, None])
+        return self.vgg_face(inputs)

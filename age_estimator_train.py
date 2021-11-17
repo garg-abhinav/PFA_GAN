@@ -41,9 +41,8 @@ def train_net(net, device, global_step=0):
             Training size:   {n_train}
             Device:          {device.type}
         ''')
+    net.train()
     for epoch in range(max_epochs):
-        net.train()
-
         with tqdm(total=n_train, desc=f'Epoch {epoch + 1}/{max_epochs}', unit='img') as pbar:
             for batch in train_loader:
                 gt_age = batch[1]
@@ -79,8 +78,7 @@ def train_net(net, device, global_step=0):
             os.mkdir(log_dir)
             logging.info('Created checkpoint directory')
 
-        torch.save(net.state_dict(), os.path.join(log_dir, f'age_estimator_step_{global_step}.pth'))
-        # logging.info(f'Checkpoint {global_step} saved !')
+        utils.save_checkoint(net, log_dir, 'age_estimator', global_step)
 
     writer.close()
 
