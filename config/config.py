@@ -9,6 +9,7 @@ cacd_data = 'CACD2000/'
 image_urls = 'image_urls.pkl'
 image_ages = 'image_ages.pkl'
 source = 0
+n_workers = 1
 
 # AgeEstimationNetwork hyper parameters
 age_lr = 0.0001
@@ -22,7 +23,7 @@ age_dir = 'age_estimation_network/'
 lr = 0.0001
 beta1 = 0.5
 beta2 = 0.99
-batch_size = 12
+batch_size = 2
 max_epochs = 2#200000
 gan_dir = 'gan/'
 lambda_age = 0.4

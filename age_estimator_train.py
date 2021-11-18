@@ -19,14 +19,14 @@ def train_net(net, device, global_step=0):
     # image_urls = pickle.load(open(os.path.join(exp_config.data_root, exp_config.image_urls), 'rb'))#[:200]
     # image_ages = pickle.load(open(os.path.join(exp_config.data_root, exp_config.image_ages), 'rb'))#[:200]
 
-    train_data = AgeDataset(transforms=True)
-    n_train = len(AgeDataset)
+    train_data = AgeDataset(do_transforms=True)
+    n_train = len(train_data)
 
     logging.info(f'Data loaded having {n_train} images')
 
     train_loader = DataLoader(train_data, batch_size=exp_config.age_batch_size,
-                              shuffle=True, num_workers=8, pin_memory=True)
-
+                              shuffle=True, num_workers=exp_config.n_workers, pin_memory=True)
+    print(train_loader.batch_sampler)
     writer = SummaryWriter(comment='AgeEstimator_LR_{}_BS_{}'.format(exp_config.age_lr, exp_config.age_batch_size))
 
     optimizer = optim.Adam(net.parameters(), lr=exp_config.age_lr, weight_decay=1e-8)

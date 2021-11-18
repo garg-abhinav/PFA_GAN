@@ -26,7 +26,7 @@ class PFA_GAN:
 
         # generator
         generator = Generator(age_group=exp_config.age_group)
-        generator.apply(utils.weights_init)
+        # generator.apply(utils.weights_init)
 
         # discriminator
         discriminator = Discriminator(age_group=exp_config.age_group)
@@ -85,13 +85,13 @@ class PFA_GAN:
                                 max_iter=exp_config.max_epochs,
                                 batch_size=exp_config.batch_size,
                                 source=exp_config.source,
-                                transforms=True)
-        n_train = len(PFADataset.image_urls)
+                                do_transforms=True)
+        n_train = len(train_data.image_list)
 
         logging.info(f'Data loaded having {n_train} images')
 
         train_loader = DataLoader(train_data, batch_size=exp_config.batch_size,
-                                  shuffle=True, num_workers=8, pin_memory=True)
+                                  shuffle=True, num_workers=exp_config.n_workers, pin_memory=True)
 
         writer = SummaryWriter(comment='GAN_LR_{}_BS_{}'.format(exp_config.lr, exp_config.batch_size))
 
@@ -112,6 +112,7 @@ class PFA_GAN:
         for epoch in range(max_epochs):
             with tqdm(total=n_train, desc=f'Epoch {epoch + 1}/{max_epochs}', unit='img') as pbar:
                 for batch in train_loader:
+                    print('in batch')
                     self.generator.train()
                     self.discriminator.train()
 

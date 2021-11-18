@@ -23,20 +23,20 @@ class BaseDataset(tordata.Dataset):
                  train=False,
                  max_iter=0,
                  batch_size=0,
-                 transforms=False):
+                 do_transforms=False):
     
         self.age_group = age_group
         self.train = train
         self.batch_size = batch_size
         self.max_iter = max_iter
         self.total_pairs = batch_size*max_iter
-        self.transforms = transforms
+        self.do_transforms = do_transforms
 
-        self.image_urls = np.array(pickle.load(open(os.path.join(opt.data_root, opt.image_urls), 'rb')))[:200]
-        self.image_ages = np.array(pickle.load(open(os.path.join(opt.data_root, opt.image_ages), 'rb')))[:200]
+        self.image_urls = np.array(pickle.load(open(os.path.join(opt.data_root, opt.image_urls), 'rb')))
+        self.image_ages = np.array(pickle.load(open(os.path.join(opt.data_root, opt.image_ages), 'rb')))
 
-        # self.image_urls = np.array(pickle.load(open('../GAN_Image_Dump.pkl', 'rb')))
-        # self.image_ages = np.array(pickle.load(open('../GAN_Age_Dump.pkl', 'rb')))
+        # self.image_urls = np.array(pickle.load(open('../data/image_urls.pkl', 'rb')))
+        # self.image_ages = np.array(pickle.load(open('../data/image_ages.pkl', 'rb')))
 
         data = load_source(train=train, urls=self.image_urls, ages=self.image_ages)
 
@@ -60,26 +60,26 @@ class BaseDataset(tordata.Dataset):
     def read_image(self, image):
         # Reading the image from the directory
         img = mpimg.imread(os.path.join(os.path.join(opt.data_root, opt.cacd_data), image))
-        # img = mpimg.imread(os.path.join('../CACD2000', image))
+        # img = mpimg.imread(os.path.join('../data/CACD2000', image))
         return img
 
     def transform_image(self, image):
-
+        print(image.shape)
         transforms = torchvision.transforms.Compose([
             torchvision.transforms.ToPILImage(),
             torchvision.transforms.Resize(opt.image_size),
             torchvision.transforms.ToTensor(),
             torchvision.transforms.Normalize([0.5], [0.5])])
-
+        print(transforms(image))
         return transforms(image)
 
 
 class AgeDataset(BaseDataset):
 
-    def __init__(self, transforms=True):
+    def __init__(self, do_transforms=True):
 
         super(AgeDataset, self).__init__(
-            transforms=transforms)
+            do_transforms=do_transforms)
 
         # self.image_urls = dataset
         # self.age = age
@@ -88,7 +88,7 @@ class AgeDataset(BaseDataset):
         url = self.image_urls[idx]
         img = self.read_image(url)
 
-        if self.transform:
+        if self.do_transforms:
             img = self.transform_image(img)
 
         return img, self.age[idx]
@@ -104,13 +104,13 @@ class PFADataset(BaseDataset):
                  max_iter,
                  batch_size,
                  source=opt.source,
-                 transforms=None):
+                 do_transforms=None):
 
         super(PFADataset, self).__init__(
             age_group=age_group,
             batch_size=batch_size,
             max_iter=max_iter,
-            transforms=transforms)
+            do_transforms=do_transforms)
 
         np.random.seed(0)
 
@@ -127,28 +127,31 @@ class PFADataset(BaseDataset):
         self.true_labels = np.random.randint(0, self.age_group, self.total_pairs)
 
     def __getitem__(self, idx):
-
+        print('1')
         source_label = self.source_labels[idx]
         target_label = self.target_labels[idx]
         true_label = self.true_labels[idx]
-
+        print('2')
         source_img = self.read_image(random.choice(self.label_group_images[source_label]))
-
+        print('3')
         index = random.randint(0, len(self.label_group_images[true_label]) - 1)
 
         true_img = self.read_image(self.label_group_images[true_label][index])
-
+        print('4')
         true_age = self.label_group_ages[true_label][index]
         mean_age = self.mean_ages[target_label]
 
-        if self.transforms:
+        if self.do_transforms:
+            print('s')
             source_img = self.transform_image(source_img)
+            print('t')
             true_img = self.transform_image(true_img)
+        print('5')
         return source_img, true_img, source_label, target_label, true_label, true_age, mean_age
 
 
 
-# x = PFADataset(age_group=opt.age_group, max_iter=2, batch_size=10, source=opt.source, transforms=True)
+# x = PFADataset(age_group=opt.age_group, max_iter=2, batch_size=10, source=opt.source, do_transforms=True)
 #
 # print(x[2])
 
