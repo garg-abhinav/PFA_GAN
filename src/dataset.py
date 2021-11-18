@@ -11,7 +11,7 @@ def load_source(train=True, age_group = opt.age_group):
     image_ages = pickle.load(open(os.path.join(exp_config.data_root, exp_config.image_ages), 'rb'))
 
     #Getting age group from age2group
-    group = age2group(age, image_ages)
+    group = age2group(age, age_group)
 
     return {'path': image_urls, 'age': image_ages, 'group': group}
 
@@ -19,7 +19,7 @@ def load_source(train=True, age_group = opt.age_group):
 class BaseDataset():
 
     def __init__(self,
-                 age_group = otp.age_group,
+                 age_group = opt.age_group,
                  train=False,
                  max_iter=0,
                  batch_size=0,
@@ -58,9 +58,9 @@ class PFADataset(BaseDataset):
                  age_group,
                  max_iter,
                  batch_size,
-                 source,
-                 transforms=None,
-                 **kwargs):
+                 source = opt.source,
+                 transforms=None):
+
         super(PFADataset, self).__init__(
             age_group = age_group,
             batch_size = batch_size,

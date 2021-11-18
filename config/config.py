@@ -8,6 +8,7 @@ data_root = 'data/'
 cacd_data = 'CACD2000/'
 image_urls = 'image_urls.pkl'
 image_ages = 'image_ages.pkl'
+source = 0
 
 # AgeEstimationNetwork hyper parameters
 age_lr = 0.0001
