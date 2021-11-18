@@ -10,17 +10,17 @@ from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 from src import utils
 from src.models import AgeEstimationNetwork
-from src.data import AgeDataset
+from src.dataset import AgeDataset
 import config.config as exp_config
 
 
 def train_net(net, device, global_step=0):
 
-    image_urls = pickle.load(open(os.path.join(exp_config.data_root, exp_config.image_urls), 'rb'))#[:200]
-    image_ages = pickle.load(open(os.path.join(exp_config.data_root, exp_config.image_ages), 'rb'))#[:200]
+    # image_urls = pickle.load(open(os.path.join(exp_config.data_root, exp_config.image_urls), 'rb'))#[:200]
+    # image_ages = pickle.load(open(os.path.join(exp_config.data_root, exp_config.image_ages), 'rb'))#[:200]
 
-    train_data = AgeDataset(image_urls, image_ages)
-    n_train = len(image_urls)
+    train_data = AgeDataset(transforms=True)
+    n_train = len(AgeDataset)
 
     logging.info(f'Data loaded having {n_train} images')
 

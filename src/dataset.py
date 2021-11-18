@@ -1,7 +1,7 @@
 import config.config as opt
 import numpy as np
 import itertools
-from utils import age2group
+from src.utils import age2group
 import random
 import torch.utils.data as tordata
 import pickle
@@ -32,8 +32,8 @@ class BaseDataset(tordata.Dataset):
         self.total_pairs = batch_size*max_iter
         self.transforms = transforms
 
-        self.image_urls = np.array(pickle.load(open(os.path.join(opt.data_root, opt.image_urls), 'rb')))
-        self.image_ages = np.array(pickle.load(open(os.path.join(opt.data_root, opt.image_ages), 'rb')))
+        self.image_urls = np.array(pickle.load(open(os.path.join(opt.data_root, opt.image_urls), 'rb')))[:200]
+        self.image_ages = np.array(pickle.load(open(os.path.join(opt.data_root, opt.image_ages), 'rb')))[:200]
 
         # self.image_urls = np.array(pickle.load(open('../GAN_Image_Dump.pkl', 'rb')))
         # self.image_ages = np.array(pickle.load(open('../GAN_Age_Dump.pkl', 'rb')))
@@ -76,17 +76,13 @@ class BaseDataset(tordata.Dataset):
 
 class AgeDataset(BaseDataset):
 
-    def __init__(self, dataset, age, age_group, train, max_iter, batch_size, transforms):
+    def __init__(self, transforms=True):
 
         super(AgeDataset, self).__init__(
-            age_group=age_group,
-            train=train,
-            max_iter=max_iter,
-            batch_size=batch_size,
             transforms=transforms)
 
-        self.image_urls = dataset
-        self.age = age
+        # self.image_urls = dataset
+        # self.age = age
 
     def __getitem__(self, idx):
         url = self.image_urls[idx]

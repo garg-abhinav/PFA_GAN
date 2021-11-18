@@ -4,7 +4,6 @@ import numpy as np
 import torch
 import torchvision
 import collections
-from torch import optim
 from tqdm import tqdm
 import math
 from torch.utils.tensorboard import SummaryWriter
@@ -12,6 +11,7 @@ from torch.utils.data import DataLoader
 import torch.nn.functional as F
 from src import utils
 from src.models import AgeEstimationNetwork, Generator, Discriminator
+from src.dataset import PFADataset
 import config.config as exp_config
 
 
@@ -81,8 +81,12 @@ class PFA_GAN:
                                   'g_optim': self.g_optim}
 
     def fit(self):
-        train_data = AgeDataset(image_urls, image_ages)
-        n_train = len(image_urls)
+        train_data = PFADataset(age_group=exp_config.age_group,
+                                max_iter=exp_config.max_epochs,
+                                batch_size=exp_config.batch_size,
+                                source=exp_config.source,
+                                transforms=True)
+        n_train = len(PFADataset.image_urls)
 
         logging.info(f'Data loaded having {n_train} images')
 
@@ -193,3 +197,9 @@ class PFA_GAN:
         std = torch.tensor([1.0, 1.0, 1.0], device=self.device)
         inputs = inputs.sub(mean[None, :, None, None]).div(std[None, :, None, None])
         return self.vgg_face(inputs)
+
+
+if __name__ == "__main__":
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    obj = PFA_GAN(device=device)
+    obj.fit()
