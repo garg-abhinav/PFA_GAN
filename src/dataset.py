@@ -1,29 +1,29 @@
 import config.config as opt
 import numpy as np
 import itertools
-from torchvision.datasets.folder import pil_loader
 from utils import age2group
+import random
+import torch.utils.data as tordata
+import pickle
+import os
+import matplotlib.image as mpimg
+import torchvision
 
-def load_source(train=True, age_group = opt.age_group):
+def load_source(urls, ages, train=True, age_group=opt.age_group):
 
-    #Importing data from pickle files available in directory
-    image_urls = pickle.load(open(os.path.join(exp_config.data_root, exp_config.image_urls), 'rb'))
-    image_ages = pickle.load(open(os.path.join(exp_config.data_root, exp_config.image_ages), 'rb'))
+    group = age2group(ages, age_group)
 
-    #Getting age group from age2group
-    group = age2group(age, age_group)
-
-    return {'path': image_urls, 'age': image_ages, 'group': group}
+    return {'path': urls, 'age': ages, 'group': group}
 
 
-class BaseDataset():
+class BaseDataset(tordata.Dataset):
 
     def __init__(self,
-                 age_group = opt.age_group,
+                 age_group=opt.age_group,
                  train=False,
                  max_iter=0,
                  batch_size=0,
-                 transforms=None):
+                 transforms=False):
     
         self.age_group = age_group
         self.train = train
@@ -32,14 +32,20 @@ class BaseDataset():
         self.total_pairs = batch_size*max_iter
         self.transforms = transforms
 
-        #Collecting individual inputs
+        self.image_urls = np.array(pickle.load(open(os.path.join(opt.data_root, opt.image_urls), 'rb')))
+        self.image_ages = np.array(pickle.load(open(os.path.join(opt.data_root, opt.image_ages), 'rb')))
+
+        # self.image_urls = np.array(pickle.load(open('../GAN_Image_Dump.pkl', 'rb')))
+        # self.image_ages = np.array(pickle.load(open('../GAN_Age_Dump.pkl', 'rb')))
+
+        data = load_source(train=train, urls=self.image_urls, ages=self.image_ages)
+
         self.image_list, self.ages, self.groups = data['path'], data['age'], data['group']
 
-        #Getting mean age at group level
         self.mean_ages = np.array([np.mean(self.ages[self.groups == i])
                                    for i in range(self.age_group)]).astype(np.float32)
 
-        #Creating 2 arrays and appending
+#       Creating 2 arrays and appending
         self.label_group_images = []
         self.label_group_ages = []
         for i in range(self.age_group):
@@ -51,28 +57,69 @@ class BaseDataset():
     def __len__(self):
         return self.total_pairs
 
-#PFA Dataset class.
+    def read_image(self, image):
+        # Reading the image from the directory
+        img = mpimg.imread(os.path.join(os.path.join(opt.data_root, opt.cacd_data), image))
+        # img = mpimg.imread(os.path.join('../CACD2000', image))
+        return img
+
+    def transform_image(self, image):
+
+        transforms = torchvision.transforms.Compose([
+            torchvision.transforms.ToPILImage(),
+            torchvision.transforms.Resize(opt.image_size),
+            torchvision.transforms.ToTensor(),
+            torchvision.transforms.Normalize([0.5], [0.5])])
+
+        return transforms(image)
+
+
+class AgeDataset(BaseDataset):
+
+    def __init__(self, dataset, age, age_group, train, max_iter, batch_size, transforms):
+
+        super(AgeDataset, self).__init__(
+            age_group=age_group,
+            train=train,
+            max_iter=max_iter,
+            batch_size=batch_size,
+            transforms=transforms)
+
+        self.image_urls = dataset
+        self.age = age
+
+    def __getitem__(self, idx):
+        url = self.image_urls[idx]
+        img = self.read_image(url)
+
+        if self.transform:
+            img = self.transform_image(img)
+
+        return img, self.age[idx]
+
+    def __len__(self):
+        return len(self.image_urls)
+
+
 class PFADataset(BaseDataset):
 
     def __init__(self,
                  age_group,
                  max_iter,
                  batch_size,
-                 source = opt.source,
+                 source=opt.source,
                  transforms=None):
 
         super(PFADataset, self).__init__(
-            age_group = age_group,
-            batch_size = batch_size,
-            max_iter = max_iter,
-            transforms = transforms
+            age_group=age_group,
+            batch_size=batch_size,
+            max_iter=max_iter,
+            transforms=transforms)
 
         np.random.seed(0)
 
-        #random integer(len-total pairs) between source+1 and age_group
         self.target_labels = np.random.randint(source + 1, self.age_group, self.total_pairs)
 
-        #Array of combinations for the range of age_group
         pairs = np.array(list(itertools.combinations(range(age_group), 2)))
         p = [1, 1, 1, 0.5, 0.5, 0.5]
         p = np.array(p) / np.sum(p)
@@ -89,19 +136,40 @@ class PFADataset(BaseDataset):
         target_label = self.target_labels[idx]
         true_label = self.true_labels[idx]
 
-        #Check what this is doing
-        source_img = pil_loader(random.choice(self.label_group_images[source_label]))
+        source_img = self.read_image(random.choice(self.label_group_images[source_label]))
 
         index = random.randint(0, len(self.label_group_images[true_label]) - 1)
-        #This
-        true_img = pil_loader(self.label_group_images[true_label][index])
+
+        true_img = self.read_image(self.label_group_images[true_label][index])
 
         true_age = self.label_group_ages[true_label][index]
         mean_age = self.mean_ages[target_label]
 
-        if self.transforms is not None:
-            source_img = self.transforms(source_img)
-            true_img = self.transforms(true_img)
+        if self.transforms:
+            source_img = self.transform_image(source_img)
+            true_img = self.transform_image(true_img)
         return source_img, true_img, source_label, target_label, true_label, true_age, mean_age
 
 
+
+# x = PFADataset(age_group=opt.age_group, max_iter=2, batch_size=10, source=opt.source, transforms=True)
+#
+# print(x[2])
+
+# print(x.source_labels)
+#
+# print(random.choice(x.label_group_images[3]))
+
+# train_sampler = tordata.distributed.DistributedSampler(x, shuffle=False)
+#
+# train_loader = tordata.DataLoader(
+#             dataset=x,
+#             batch_size=10,
+#             drop_last=True,
+#             num_workers=16,
+#             pin_memory=True,
+#             sampler=train_sampler
+#         )
+#
+# y = data_prefetcher(train_loader, [0, 1])
+#
