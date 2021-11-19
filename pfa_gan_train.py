@@ -92,8 +92,7 @@ class PFA_GAN:
         logging.info(f'Data loaded having {n_train} images')
 
         train_loader = DataLoader(train_data, batch_size=exp_config.batch_size,
-                                  shuffle=True, num_workers=exp_config.n_workers, pin_memory=True,
-                                  collate_fn=lambda x: default_collate(x).to(device))
+                                  shuffle=True, num_workers=exp_config.n_workers, pin_memory=True)
 
         writer = SummaryWriter(comment='GAN_LR_{}_BS_{}'.format(exp_config.lr, exp_config.batch_size))
 
@@ -114,21 +113,21 @@ class PFA_GAN:
         for epoch in range(max_epochs):
             with tqdm(total=n_train, desc=f'Epoch {epoch + 1}/{max_epochs}', unit='img') as pbar:
                 for batch in train_loader:
-                    # source_img, true_img, source_label, target_label, true_label, true_age, mean_age = batch
-                    # true_img = true_img.to(device=self.device)
-                    # source_label = source_label.to(device=self.device)
-                    # target_label = target_label.to(device=self.device)
-                    # true_label = true_label.to(device=self.device)
-                    # true_age = true_age.to(device=self.device)
-                    # mean_age = mean_age.to(device=self.device)
+                    source_img, true_img, source_label, target_label, true_label, true_age, mean_age = batch
+                    true_img = true_img.to(device=self.device)
+                    source_label = source_label.to(device=self.device)
+                    target_label = target_label.to(device=self.device)
+                    true_label = true_label.to(device=self.device)
+                    true_age = true_age.to(device=self.device)
+                    mean_age = mean_age.to(device=self.device)
                     self.generator.train()
                     self.discriminator.train()
 
                     # Train Discriminator
-                    d_loss, g_source = self.train_discriminator(batch)
+                    d_loss, g_source = self.train_discriminator(source_img, true_img, source_label, target_label, true_label, true_age, mean_age)
 
                     # Train Generator
-                    g_loss, l1_loss, ssim_loss, id_loss, age_loss, total_loss = self.train_generator(batch, g_source)
+                    g_loss, l1_loss, ssim_loss, id_loss, age_loss, total_loss = self.train_generator(source_img, true_img, source_label, target_label, true_label, true_age, mean_age, g_source)
 
                     pbar.set_postfix(**{"d_loss": d_loss,
                                         "g_loss": g_loss,
@@ -151,8 +150,8 @@ class PFA_GAN:
                     utils.save_checkoint(module, self.log_dir, name, self.global_step)
         writer.close()
 
-    def train_discriminator(self, batch):
-        source_img, true_img, source_label, target_label, true_label, true_age, mean_age = batch
+    def train_discriminator(self, source_img, true_img, source_label, target_label, true_label, true_age, mean_age):
+        # source_img, true_img, source_label, target_label, true_label, true_age, mean_age = batch
         g_source = self.generator(source_img, source_label, target_label)
 
         d1_logit = self.discriminator(true_img, true_label)
@@ -167,8 +166,8 @@ class PFA_GAN:
         self.d_optim.step()
         return d_loss, g_source
 
-    def train_generator(self, batch, g_source):
-        source_img, true_img, source_label, target_label, true_label, true_age, mean_age = batch
+    def train_generator(self, source_img, true_img, source_label, target_label, true_label, true_age, mean_age, g_source):
+        # source_img, true_img, source_label, target_label, true_label, true_age, mean_age = batch
         gan_logit = self.discriminator(g_source, target_label)
 
         # GAN loss
