@@ -114,6 +114,7 @@ class PFA_GAN:
             with tqdm(total=n_train, desc=f'Epoch {epoch + 1}/{max_epochs}', unit='img') as pbar:
                 for batch in train_loader:
                     source_img, true_img, source_label, target_label, true_label, true_age, mean_age = batch
+                    source_img = source_img.to(device=self.device)
                     true_img = true_img.to(device=self.device)
                     source_label = source_label.to(device=self.device)
                     target_label = target_label.to(device=self.device)
@@ -129,18 +130,18 @@ class PFA_GAN:
                     # Train Generator
                     g_loss, l1_loss, ssim_loss, id_loss, age_loss, total_loss = self.train_generator(source_img, true_img, source_label, target_label, true_label, true_age, mean_age, g_source)
 
-                    pbar.set_postfix(**{"d_loss": d_loss,
-                                        "g_loss": g_loss,
-                                        "total_loss": total_loss})
+                    pbar.set_postfix(**{"d_loss": d_loss.item(),
+                                        "g_loss": g_loss.item(),
+                                        "total_loss": total_loss.item()})
                     pbar.update(batch[0].shape[0])  # assuming batch[0] is images
 
-                    writer.add_scalar('d_loss/train', d_loss, self.global_step)
-                    writer.add_scalar('g_loss/train', g_loss, self.global_step)
-                    writer.add_scalar('l1_loss/train', l1_loss, self.global_step)
-                    writer.add_scalar('ssim_loss/train', ssim_loss, self.global_step)
-                    writer.add_scalar('id_loss/train', id_loss, self.global_step)
-                    writer.add_scalar('age_loss/train', age_loss, self.global_step)
-                    writer.add_scalar('total_loss/train', total_loss, self.global_step)
+                    writer.add_scalar('d_loss/train', d_loss.item(), self.global_step)
+                    writer.add_scalar('g_loss/train', g_loss.item(), self.global_step)
+                    writer.add_scalar('l1_loss/train', l1_loss.item(), self.global_step)
+                    writer.add_scalar('ssim_loss/train', ssim_loss.item(), self.global_step)
+                    writer.add_scalar('id_loss/train', id_loss.item(), self.global_step)
+                    writer.add_scalar('age_loss/train', age_loss.item(), self.global_step)
+                    writer.add_scalar('total_loss/train', total_loss.item(), self.global_step)
                     self.global_step += 1
 
                 writer.add_scalar('learning_rate', self.g_optim.param_groups[0]['lr'], self.global_step)

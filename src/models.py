@@ -8,12 +8,15 @@ class Conv2DBlock(nn.Module):
         super(Conv2DBlock, self).__init__()
         self.conv2d = nn.Conv2d(in_channels=in_channels, out_channels=out_channels,
                                 kernel_size=kernel_size, stride=stride, padding=padding)
-        self.norm = normalization
+        if normalization == nn.utils.spectral_norm:
+            self.norm = normalization(self.conv2d)
+        else:
+            self.norm = normalization
         self.activation = activation
 
     def forward(self, x):
         if self.norm == nn.utils.spectral_norm:
-            return self.activation(self.norm(self.conv2d)(x))
+            return self.activation(self.norm(x))
         else:
             return self.activation(self.norm(self.conv2d(x)))
 
@@ -109,7 +112,7 @@ class Generator(nn.Module):
         return code
 
     def forward(self, x, source, target):
-        condition = self.pfa_encoding(source, target).to(x).float()
+        condition = self.pfa_encoding(source, target).to(x)
         for i in range(self.age_group - 1):
             x = x + self.gen[i](x) * condition[:, i]
         return x
@@ -124,11 +127,11 @@ class Discriminator(nn.Module):
         layers = []
         in_channels = channels[0] + self.age_group
         for ch in channels[1: len(channels) - 1]:
-            layers.append(Conv2DBlock(in_channels, ch, nn.utils.spectral_norm,
+            layers.append(Conv2DBlock(in_channels, ch, nn.BatchNorm2d(num_features=ch),
                                       nn.LeakyReLU(0.2, inplace=True), 4, 2, 1))
             in_channels = ch
 
-        layers.append(Conv2DBlock(channels[-2], channels[-1], nn.utils.spectral_norm,
+        layers.append(Conv2DBlock(channels[-2], channels[-1], nn.BatchNorm2d(num_features=ch),
                                   nn.LeakyReLU(0.2, inplace=True), 4, 1, 1))
         layers.append(nn.Conv2d(channels[-1], 1, 4, 1, 1))
 
@@ -145,6 +148,6 @@ class Discriminator(nn.Module):
         return onehot.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, feature_size, feature_size)
 
     def forward(self, x, condition):
-        x = F.leaky_relu(self.conv1(x), 0.2, inplace=True)
-        condition = self.group2feature(condition, x.shape[2]).to(x)
+        x = F.leaky_relu(self.conv(x), 0.2, inplace=True)
+        condition = self.group2feature(condition, x.shape[2]).to(x.device)
         return self.disc(torch.cat([x, condition], dim=1))
