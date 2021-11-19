@@ -64,13 +64,11 @@ class BaseDataset(tordata.Dataset):
         return img
 
     def transform_image(self, image):
-        print(image.shape)
         transforms = torchvision.transforms.Compose([
             torchvision.transforms.ToPILImage(),
             torchvision.transforms.Resize(opt.image_size),
             torchvision.transforms.ToTensor(),
             torchvision.transforms.Normalize([0.5], [0.5])])
-        print(transforms(image))
         return transforms(image)
 
 
@@ -127,26 +125,19 @@ class PFADataset(BaseDataset):
         self.true_labels = np.random.randint(0, self.age_group, self.total_pairs)
 
     def __getitem__(self, idx):
-        print('1')
         source_label = self.source_labels[idx]
         target_label = self.target_labels[idx]
         true_label = self.true_labels[idx]
-        print('2')
         source_img = self.read_image(random.choice(self.label_group_images[source_label]))
-        print('3')
         index = random.randint(0, len(self.label_group_images[true_label]) - 1)
 
         true_img = self.read_image(self.label_group_images[true_label][index])
-        print('4')
         true_age = self.label_group_ages[true_label][index]
         mean_age = self.mean_ages[target_label]
 
         if self.do_transforms:
-            print('s')
             source_img = self.transform_image(source_img)
-            print('t')
             true_img = self.transform_image(true_img)
-        print('5')
         return source_img, true_img, source_label, target_label, true_label, true_age, mean_age
 
 
