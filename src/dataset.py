@@ -155,24 +155,22 @@ class PFADataset(BaseDataset):
 class GroupDataset(BaseDataset):
 
     def __init__(self,
-                 age_group,
-                 train,
-                 group,
                  do_transforms=None):
         super(GroupDataset, self).__init__(
-            train=train,
-            age_group=age_group,
             do_transforms=do_transforms)
-        self.label_group_image = self.label_group_images[group]
+
+        self.test_urls = pickle.load(open(os.path.join(opt.data_root, opt.test_image_urls), 'rb'))
+        self.test_ages = pickle.load(open(os.path.join(opt.data_root, opt.test_image_ages), 'rb'))
 
     def __getitem__(self, idx):
-        img = self.read_image(self.label_group_image[idx])
-        if self.do_transforms is not None:
-            img = self.transforms(img)
-        return img
+        img = self.read_image(self.test_urls[idx])
+        age = self.test_ages[idx]
+        if self.do_transforms:
+            img = self.transform_image(img)
+        return img, age
 
     def __len__(self):
-        return len(self.label_group_image)
+        return len(self.test_urls)
 
 # x = PFADataset(age_group=opt.age_group, max_iter=2, batch_size=10, source=opt.source, do_transforms=True)
 #
@@ -195,3 +193,6 @@ class GroupDataset(BaseDataset):
 #
 # y = data_prefetcher(train_loader, [0, 1])
 #
+# test = GroupDataset(do_transforms='yes')
+# print(len(test.test_urls))
+# print(len(test.test_ages))

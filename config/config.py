@@ -8,6 +8,8 @@ data_root = 'data/'
 cacd_data = 'CACD2000/'
 image_urls = 'image_urls.pkl'
 image_ages = 'image_ages.pkl'
+test_image_urls = 'test_image_urls.pkl'
+test_image_ages = 'test_image_ages.pkl'
 source = 0
 n_workers = 1
 
