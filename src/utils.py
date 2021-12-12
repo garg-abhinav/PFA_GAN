@@ -118,6 +118,7 @@ def get_estimated_age(image, key, secret):
         return response['faces'][0]['attributes']['age']['value']
     except IndexError:
         print(response)
+        return -1
 
 
 def get_verification_confidence(image1, image2, key, secret):
