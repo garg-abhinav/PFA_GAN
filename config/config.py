@@ -15,7 +15,7 @@ n_workers = 1
 age_lr = 0.0001
 age_lr_decay_rate = 0.7
 age_lr_decay_steps = 15
-age_batch_size = 128
+age_batch_size = 10
 age_max_epochs = 2
 age_dir = 'age_estimation_network/'
 
