@@ -54,3 +54,4 @@ h5py==3.5.0
 mat73==0.52
 tqdm==4.62.3
 tensorboard
+requests==2.26.0

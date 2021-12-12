@@ -12,6 +12,7 @@ test_image_urls = 'test_image_urls.pkl'
 test_image_ages = 'test_image_ages.pkl'
 source = 0
 n_workers = 1
+output_path = 'output/'
 
 # AgeEstimationNetwork hyper parameters
 age_lr = 0.0001
@@ -34,3 +35,7 @@ lambda_gan = 100
 alpha_ssim = 0.15
 alpha_id = 0.025
 checkpoint = 10
+
+# Face++
+key = '4Bv7f6IkUgal5i0WuBTHc5zEcHPKnqvO'
+secret = 'FG5HKRl_6O7sldkJgkM15JxjWahdmsdu'

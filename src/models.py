@@ -112,7 +112,7 @@ class Generator(nn.Module):
         return code
 
     def forward(self, x, source, target):
-        condition = self.pfa_encoding(source, target).to(x)
+        condition = self.pfa_encoding(source, target).to(x).float()
         for i in range(self.age_group - 1):
             x = x + self.gen[i](x) * condition[:, i]
         return x

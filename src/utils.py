@@ -4,6 +4,9 @@ import numpy as np
 import os
 import glob
 import math
+import requests
+import json
+import matplotlib.pyplot as plt
 
 
 def get_latest_checkpoint(net, log_dir, name, device):
@@ -97,3 +100,39 @@ def create_window(window_size, channel):
     window_2d = window_1d.mm(window_1d.t()).float().unsqueeze(0).unsqueeze(0)
     window = window_2d.expand(channel, 1, window_size, window_size).contiguous()
     return window
+
+
+def get_estimated_age(image, key, secret):
+
+    files = {
+        'api_key': (None, key),
+        'api_secret': (None, secret),
+        'image_file': (image, open(image, 'rb')),
+        'return_landmark': (None, '0'),
+        'return_attributes': (None, 'gender,age'),
+    }
+
+    response = requests.post('https://api-us.faceplusplus.com/facepp/v3/detect', files=files)
+    response = json.loads(response.text)
+    try:
+        return response['faces'][0]['attributes']['age']['value']
+    except IndexError:
+        print(response)
+
+
+def get_verification_confidence(image1, image2, key, secret):
+    files = {
+        'api_key': (None, key),
+        'api_secret': (None, secret),
+        'image_file1': (image1, open(image1, 'rb')),
+        'image_file2': (image2, open(image2, 'rb')),
+    }
+
+    response = requests.post('https://api-us.faceplusplus.com/facepp/v3/compare', files=files)
+    response = json.loads(response.text)
+    return response['confidence']
+
+
+if __name__ == '__main__':
+    age = np.array([10])
+    print(age2group(age, 4))

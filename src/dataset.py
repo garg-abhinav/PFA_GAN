@@ -9,8 +9,8 @@ import os
 import matplotlib.image as mpimg
 import torchvision
 
-def load_source(urls, ages, train=True, age_group=opt.age_group):
 
+def load_source(urls, ages, train=True, age_group=opt.age_group):
     group = age2group(ages, age_group)
 
     return {'path': urls, 'age': ages, 'group': group}
@@ -24,12 +24,11 @@ class BaseDataset(tordata.Dataset):
                  max_iter=0,
                  batch_size=0,
                  do_transforms=False):
-    
         self.age_group = age_group
         self.train = train
         self.batch_size = batch_size
         self.max_iter = max_iter
-        self.total_pairs = batch_size*max_iter
+        self.total_pairs = batch_size * max_iter
         self.do_transforms = do_transforms
 
         randomlist = random.sample(range(1, 160000), 20)
@@ -47,7 +46,7 @@ class BaseDataset(tordata.Dataset):
         self.mean_ages = np.array([np.mean(self.ages[self.groups == i])
                                    for i in range(self.age_group)]).astype(np.float32)
 
-#       Creating 2 arrays and appending
+        #       Creating 2 arrays and appending
         self.label_group_images = []
         self.label_group_ages = []
         for i in range(self.age_group):
@@ -66,7 +65,6 @@ class BaseDataset(tordata.Dataset):
         return img
 
     def transform_image(self, image):
-        print(image.shape)
         transforms = torchvision.transforms.Compose([
             torchvision.transforms.ToPILImage(),
             torchvision.transforms.Resize(opt.image_size),
@@ -78,7 +76,6 @@ class BaseDataset(tordata.Dataset):
 class AgeDataset(BaseDataset):
 
     def __init__(self, do_transforms=True):
-
         super(AgeDataset, self).__init__(
             do_transforms=do_transforms)
 
@@ -106,7 +103,6 @@ class PFADataset(BaseDataset):
                  batch_size,
                  source=opt.source,
                  do_transforms=None):
-
         super(PFADataset, self).__init__(
             age_group=age_group,
             batch_size=batch_size,
@@ -128,29 +124,22 @@ class PFADataset(BaseDataset):
         self.true_labels = np.random.randint(0, self.age_group, self.total_pairs)
 
     def __getitem__(self, idx):
-        print('1')
         source_label = self.source_labels[idx]
         target_label = self.target_labels[idx]
         true_label = self.true_labels[idx]
-        print('2')
         source_img = self.read_image(random.choice(self.label_group_images[source_label]))
-        print('3')
         index = random.randint(0, len(self.label_group_images[true_label]) - 1)
 
         true_img = self.read_image(self.label_group_images[true_label][index])
-        print('4')
         true_age = self.label_group_ages[true_label][index]
         mean_age = self.mean_ages[target_label]
 
         if self.do_transforms:
-            print('s')
             source_img = self.transform_image(source_img)
-            print('t')
             true_img = self.transform_image(true_img)
-        print('5')
         return source_img, true_img, source_label, target_label, true_label, true_age, mean_age
 
-###############Group Dataset
+
 
 class GroupDataset(BaseDataset):
 
@@ -159,8 +148,8 @@ class GroupDataset(BaseDataset):
         super(GroupDataset, self).__init__(
             do_transforms=do_transforms)
 
-        self.test_urls = pickle.load(open(os.path.join(opt.data_root, opt.test_image_urls), 'rb'))
-        self.test_ages = pickle.load(open(os.path.join(opt.data_root, opt.test_image_ages), 'rb'))
+        self.test_urls = pickle.load(open(os.path.join(opt.data_root, opt.test_image_urls), 'rb'))[9900:]
+        self.test_ages = pickle.load(open(os.path.join(opt.data_root, opt.test_image_ages), 'rb'))[9900:]
 
     def __getitem__(self, idx):
         img = self.read_image(self.test_urls[idx])

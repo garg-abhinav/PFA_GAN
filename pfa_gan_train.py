@@ -207,6 +207,20 @@ class PFA_GAN:
         inputs = inputs.sub(mean[None, :, None, None]).div(std[None, :, None, None])
         return self.vgg_face(inputs)
 
+    def validation(self, train_data):
+        source_img, true_img, source_label, target_label, true_label, true_age, mean_age = train_data[:2]
+        source_img = source_img.to(device=self.device)
+        true_img = true_img.to(device=self.device)
+        source_label = source_label.to(device=self.device)
+        target_label = target_label.to(device=self.device)
+        true_label = true_label.to(device=self.device)
+        true_age = true_age.to(device=self.device)
+        mean_age = mean_age.to(device=self.device)
+
+        for img in source_img:
+            self.generator.eval()
+            g_source = self.generator(source_img, source_label, target_label)
+
 
 if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
