@@ -37,7 +37,8 @@ def generate_images(device, log_dir):
             # generate fake images
             for target in range(source + 1, exp_config.age_group):
                 output = generator(real_img, torch.ones(bs) * source, torch.ones(bs) * target)
-                torchvision.utils.save_image(output * 0.5 + 0.5, 'fake_img.jpg')
+                output = output * 0.5 + 0.5
+                torchvision.utils.save_image(output, 'fake_img.jpg')
 
                 estimated_age = utils.get_estimated_age('fake_img.jpg', exp_config.key, exp_config.secret)
                 estimated_group = utils.age2group(torch.tensor([estimated_age]), exp_config.age_group)
@@ -49,7 +50,6 @@ def generate_images(device, log_dir):
                 if int(estimated_group) == int(target):
                     age_accuracy[target] += 1
     
-                output = output * 0.5 + 0.5
                 fake_imgs.append(output)
 
             pbar.update(1)
