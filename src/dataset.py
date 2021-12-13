@@ -148,7 +148,7 @@ class GroupDataset(BaseDataset):
         super(GroupDataset, self).__init__(
             do_transforms=do_transforms)
 
-        self.test_urls = np.araay(pickle.load(open(os.path.join(opt.data_root, opt.test_image_urls), 'rb')))#[9900:]
+        self.test_urls = np.array(pickle.load(open(os.path.join(opt.data_root, opt.test_image_urls), 'rb')))#[9900:]
         self.test_ages = np.array(pickle.load(open(os.path.join(opt.data_root, opt.test_image_ages), 'rb')))#[9900:]
 
         index = np.arange(len(self.test_urls))
