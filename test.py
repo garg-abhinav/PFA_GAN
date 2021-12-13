@@ -46,6 +46,8 @@ def generate_images(device, log_dir):
                 estimated_group = utils.age2group(torch.tensor([estimated_age]), exp_config.age_group)
                 verification_confidence = utils.get_verification_confidence('real_img.jpg', 'fake_img.jpg',
                                                                             exp_config.key, exp_config.secret)
+                if verification_confidence == -1:
+                    continue
     
                 counts[target] += 1
                 confidence[target] += verification_confidence

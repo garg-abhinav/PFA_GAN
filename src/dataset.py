@@ -148,8 +148,14 @@ class GroupDataset(BaseDataset):
         super(GroupDataset, self).__init__(
             do_transforms=do_transforms)
 
-        self.test_urls = pickle.load(open(os.path.join(opt.data_root, opt.test_image_urls), 'rb'))#[9900:]
-        self.test_ages = pickle.load(open(os.path.join(opt.data_root, opt.test_image_ages), 'rb'))#[9900:]
+        self.test_urls = np.araay(pickle.load(open(os.path.join(opt.data_root, opt.test_image_urls), 'rb')))#[9900:]
+        self.test_ages = np.array(pickle.load(open(os.path.join(opt.data_root, opt.test_image_ages), 'rb')))#[9900:]
+
+        index = np.arange(len(self.test_urls))
+        index = np.random.choice(index, 1000)
+
+        self.test_urls = self.test_urls[index]
+        self.test_ages = self.test_ages[index]
 
     def __getitem__(self, idx):
         img = self.read_image(self.test_urls[idx])

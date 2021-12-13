@@ -131,7 +131,11 @@ def get_verification_confidence(image1, image2, key, secret):
 
     response = requests.post('https://api-us.faceplusplus.com/facepp/v3/compare', files=files)
     response = json.loads(response.text)
-    return response['confidence']
+    try:
+        return response['confidence']
+    except KeyError:
+        print(response)
+        return -1
 
 
 if __name__ == '__main__':
