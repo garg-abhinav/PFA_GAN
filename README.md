@@ -13,7 +13,7 @@ Here is an example of create environ **from scratch** with `anaconda`
 
 ```sh
 # create conda env
-conda create --name frcnn python=3.9
+conda create --name pfagan python=3.9
 conda activate pfagan
 # install dependencies
 pip install -r requirements.txt
