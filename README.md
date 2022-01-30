@@ -23,7 +23,7 @@ pip install -r requirements.txt
 
 ### 1. Prepare data
 
-#### Pascal VOC2007
+#### CACD2000 Dataset
 
 1. Download the dataset ([data](https://bcsiriuschen.github.io/CARC/)).
 2. Create a directory named `data` and extract all the files there.
