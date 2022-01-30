@@ -26,9 +26,9 @@ pip install -r requirements.txt
 #### Pascal VOC2007
 
 1. Download the dataset ([data](https://bcsiriuschen.github.io/CARC/)).
-2. Create a directory named 'data' and extract all the tars there.
-3. Create the metadata files (train and test) for training the network usinf data_exploration.py. Update the file as needed. 
-4. It should have this basic structure
+2. Create a directory named `data` and extract all the files there.
+3. Create the metadata files (train and test) for training the network using `data_exploration.py`. Update the file as needed. 
+4. The directory should have this basic structure
 
    ```Bash
    $data/CACD2000                           # jpg files goes here
@@ -66,3 +66,5 @@ To run inference on select test images, update the paths where trained models ar
 ```bash
 python test.py 
 ```
+
+Use the Face++ API to evaluate the model.
