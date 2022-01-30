@@ -48,7 +48,7 @@ Update the parameters in `config/config.py` as per the experiment.
 
 1. Train the age estimation network.
 ```bash
-python age_estimation_network.py 
+python age_estimator_network.py 
 ```
 2. Download the DeepFace caffe [model](https://www.robots.ox.ac.uk/~vgg/software/vgg_face/) (the torch model on this website is buggy).
 
